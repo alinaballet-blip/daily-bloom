@@ -441,19 +441,13 @@ return InkWell(
         ),
       ),
       if (calories != null) ...[
-        const SizedBox(height: 4),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-           calories.toStringAsFixed(0),
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFFB77F98),
-            ),
-          ),
-        ),
-      ],
+  const SizedBox(height: 4),
+  const Icon(
+    Icons.filter_vintage_outlined,
+    size: 18,
+    color: Color(0xFFAD83CC),
+  ),
+],
     ],
   ),
   ), 
@@ -507,9 +501,9 @@ Container(
     color: const Color(0xFFFCE6EE),
     borderRadius: BorderRadius.circular(16),
   ),
-  child: Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
+  child: Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
       const Text(
         '本月每日平均熱量',
         style: TextStyle(
@@ -529,11 +523,12 @@ Container(
       ),
       
 const SizedBox(height: 12),
-Row(
-  mainAxisSize: MainAxisSize.min,
+Wrap(
+  alignment: WrapAlignment.center,
+  spacing: 8,
+  runSpacing: 8,
   children: [
-    Flexible(
-  fit: FlexFit.loose,
+    SizedBox(width: 105,
   child: Container(
         padding: const EdgeInsets.symmetric(
           vertical: 18,
@@ -558,8 +553,8 @@ Row(
         ),
       ),
     ),
-    const SizedBox(width: 8),
-    Expanded(
+    SizedBox(
+  width: 105,
       child: Container(
         padding: const EdgeInsets.symmetric(
           vertical: 18,
@@ -584,8 +579,8 @@ Row(
         ),
       ),
     ),
-    const SizedBox(width: 8),
-    Expanded(
+    SizedBox(
+  width: 105,
       child: Container(
         padding: const EdgeInsets.symmetric(
           vertical: 18,

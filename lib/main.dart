@@ -116,13 +116,15 @@ class NutritionData {
   final double protein;
   final double fat;
   final double carbs;
+  final String note;
 
   const NutritionData({
-    required this.calories,
-    required this.protein,
-    required this.fat,
-    required this.carbs,
-  });
+  required this.calories,
+  required this.protein,
+  required this.fat,
+  required this.carbs,
+  this.note = '',
+});
 
   static const zero = NutritionData(
     calories: 0,
@@ -213,6 +215,7 @@ String get displayDate {
                 protein: (data['protein'] as num).toDouble(),
                 fat: (data['fat'] as num).toDouble(),
                 carbs: (data['carbs'] as num).toDouble(),
+                note: data['note'] as String? ?? '',
               );
             }
           }
@@ -243,6 +246,7 @@ String get displayDate {
         'protein': entry.value.protein,
         'fat': entry.value.fat,
         'carbs': entry.value.carbs,
+        'note': entry.value.note,
       };
     }
 
@@ -611,6 +615,18 @@ onEditDate: (date) async {
                                         color: BloomColors.secondary,
                                       ),
                                     ),
+                                    if (data != null && data.note.isNotEmpty) ...[
+  const SizedBox(height: 6),
+  Text(
+    data.note,
+    style: const TextStyle(
+      fontSize: 12,
+      color: BloomColors.secondary,
+    ),
+    maxLines: 2,
+    overflow: TextOverflow.ellipsis,
+  ),
+],
                                   ],
                                 ),
                               ),
@@ -795,6 +811,7 @@ class _MealEditorState extends State<MealEditor> {
   late final TextEditingController proteinController;
   late final TextEditingController fatController;
   late final TextEditingController carbsController;
+  late final TextEditingController noteController;
 
   @override
   void initState() {
@@ -816,6 +833,9 @@ class _MealEditorState extends State<MealEditor> {
     carbsController = TextEditingController(
       text: initialValue(widget.initial?.carbs),
     );
+    noteController = TextEditingController(
+  text: widget.initial?.note ?? '',
+);
   }
 
   @override
@@ -824,6 +844,7 @@ class _MealEditorState extends State<MealEditor> {
     proteinController.dispose();
     fatController.dispose();
     carbsController.dispose();
+    noteController.dispose();
     super.dispose();
   }
 
@@ -876,6 +897,7 @@ class _MealEditorState extends State<MealEditor> {
         protein: double.parse(proteinController.text.trim()),
         fat: double.parse(fatController.text.trim()),
         carbs: double.parse(carbsController.text.trim()),
+        note: noteController.text.trim(),
       ),
     );
   }
@@ -951,6 +973,23 @@ class _MealEditorState extends State<MealEditor> {
                   'g',
                   carbsController,
                 ),
+                const SizedBox(height: 12),
+TextFormField(
+  controller: noteController,
+  maxLines: 3,
+  minLines: 2,
+  keyboardType: TextInputType.multiline,
+  decoration: InputDecoration(
+    labelText: '📝 飲食備註',
+    hintText: '例如：雞腿便當（無飯）、無糖豆漿',
+    alignLabelWithHint: true,
+    filled: true,
+    fillColor: Colors.white,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+    ),
+  ),
+),
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,

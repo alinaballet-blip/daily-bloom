@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'services/nutrition_storage.dart';
 import 'pages/calendar_page.dart';
+import 'pages/settings_page.dart';
 
 void main() {
   runApp(const DailyBloomApp());
@@ -369,12 +370,12 @@ onEditDate: (date) async {
       ),
     );
   } else if (index == 2) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('設定功能即將開發 🌷'),
-      ),
-    );
-  }
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => const SettingsPage(),
+    ),
+  );
+}
 },
 
       ),

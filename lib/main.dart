@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'services/nutrition_storage.dart';
 import 'pages/calendar_page.dart';
 import 'pages/settings_page.dart';
@@ -166,10 +167,34 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final Map<MealType, NutritionData> records = {};
-
+static const List<String> dailyGreetings = [
+  'Take care of your little planet.',
+  'Even the smallest rose deserves love.',
+  'Leave a little room for wonder.',
+  'Your heart knows the way home.',
+  'A little care makes things bloom.',
+  'There is magic in ordinary days.',
+  'Let the stars remind you to dream.',
+  'Be patient with the things you grow.',
+  'Some treasures are felt, not seen.',
+  'May your little world be gentle today.',
+  'Water your dreams with kindness.',
+  'You are a universe worth caring for.',
+];
   
   bool isLoading = true;
 
+String get dailyGreeting {
+  final today = DateTime.now();
+  final dayNumber = DateTime(today.year, today.month, today.day)
+      .difference(DateTime(2020, 1, 1))
+      .inDays;
+
+  final index = (dayNumber * 7 + dayNumber ~/ 12) %
+      dailyGreetings.length;
+
+  return dailyGreetings[index];
+}
 
 String get todayKey {
   final date = widget.selectedDate ?? DateTime.now();
@@ -443,13 +468,19 @@ onEditDate: (date) async {
                 const SizedBox(height: 8),
                 Text(
   widget.selectedDate == null
-      ? '今天也要好好照顧自己 ♡'
+      ? dailyGreeting
       : '編輯當天的營養紀錄 ♡',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: BloomColors.text,
-                  ),
+                  style: widget.selectedDate == null
+    ? GoogleFonts.quicksand(
+        fontSize: 20,
+        fontWeight: FontWeight.w500,
+        color: BloomColors.text,
+      )
+    : const TextStyle(
+        fontSize: 22,
+        fontWeight: FontWeight.bold,
+        color: BloomColors.text,
+      ),
                 ),
                 const SizedBox(height: 24),
                 Container(

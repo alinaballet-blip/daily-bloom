@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:file_saver/file_saver.dart';
 import 'package:file_picker/file_picker.dart' as fp;
 import '../services/nutrition_storage.dart';
+import '../services/habit_storage.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -13,10 +14,19 @@ class SettingsPage extends StatelessWidget {
   try {
     // 讀取所有日期的飲食紀錄
     final records = await NutritionStorage.load();
+    // 讀取所有日期的小習慣紀錄
+final habits = await HabitStorage.load();
+
+// 合併成新版備份資料
+final backupData = {
+  'version': 2,
+  'nutrition': records,
+  'habits': habits,
+};
 
     // 轉換成格式化的 JSON
     final jsonText =
-        const JsonEncoder.withIndent('  ').convert(records);
+        const JsonEncoder.withIndent('  ').convert(backupData);
 
     // 轉換成檔案資料
     final bytes = Uint8List.fromList(utf8.encode(jsonText));
@@ -95,23 +105,53 @@ final confirmed = await showDialog<bool>(
 );
 
 if (confirmed != true) return;
+// 判斷新版或舊版備份格式
+final isNewBackup = decoded['version'] == 2;
 
+final nutritionBackup = isNewBackup
+    ? decoded['nutrition']
+    : decoded;
+
+final habitsBackup = isNewBackup
+    ? decoded['habits']
+    : null;
+
+// 確認備份格式
+if (nutritionBackup is! Map<String, dynamic>) {
+  throw const FormatException('飲食備份格式不正確');
+}
+
+if (habitsBackup != null &&
+    habitsBackup is! Map<String, dynamic>) {
+  throw const FormatException('小習慣備份格式不正確');
+}
 // 讀取現有紀錄並合併備份
 final existingRecords = await NutritionStorage.load();
 
 final mergedRecords = <String, dynamic>{
   ...existingRecords,
-  ...decoded,
+  ...nutritionBackup,
 };
 
 // 儲存合併後的資料
 await NutritionStorage.save(mergedRecords);
+// 合併並還原每日小習慣
+if (habitsBackup is Map<String, dynamic>) {
+  final existingHabits = await HabitStorage.load();
+
+  final mergedHabits = <String, dynamic>{
+    ...existingHabits,
+    ...habitsBackup,
+  };
+
+  await HabitStorage.save(mergedHabits);
+}
 
 if (!context.mounted) return;
 
 ScaffoldMessenger.of(context).showSnackBar(
   const SnackBar(
-    content: Text('飲食紀錄合併還原成功 ♡'),
+   content: Text('Daily Bloom 資料合併還原成功 ♡'),
   ),
 );
 

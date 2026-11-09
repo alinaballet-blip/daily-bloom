@@ -5,6 +5,7 @@ import 'services/nutrition_storage.dart';
 import 'pages/calendar_page.dart';
 import 'pages/settings_page.dart';
 import 'bloom_calculator.dart';
+import 'services/habit_storage.dart';
 
 
 void main() {
@@ -169,6 +170,11 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final Map<MealType, NutritionData> records = {};
+  final Map<String, bool> habits = {
+  'poop': false,
+  'noSugaryDrinks': false,
+  'moveYourBody': false,
+};
 static const List<String> dailyGreetings = [
   'Take care of your little planet.',
   'Even the smallest rose deserves love.',
@@ -220,8 +226,38 @@ String get displayDate {
   void initState() {
     super.initState();
     loadRecords();
+    loadHabits();
   }
+  @override
+void didUpdateWidget(covariant HomePage oldWidget) {
+  super.didUpdateWidget(oldWidget);
 
+  if (widget.selectedDate != oldWidget.selectedDate) {
+    loadRecords();
+    loadHabits();
+  }
+}
+Future<void> loadHabits() async {
+  final allHabits = await HabitStorage.load();
+  final todayHabits = allHabits[todayKey];
+
+  if (!mounted) return;
+
+  setState(() {
+    for (final key in habits.keys) {
+      habits[key] = todayHabits is Map
+          ? todayHabits[key] == true
+          : false;
+    }
+  });
+}
+Future<void> saveHabits() async {
+  final allHabits = await HabitStorage.load();
+
+  allHabits[todayKey] = Map<String, bool>.from(habits);
+
+  await HabitStorage.save(allHabits);
+}
   Future<void> loadRecords() async {
     try {
       final allRecords = await NutritionStorage.load();
@@ -531,6 +567,33 @@ onEditDate: (date) async {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 16),
+Row(
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  children: [
+    Text(
+  'P: ${displayNumber(total.protein)} g',
+  style: const TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+  ),
+),
+Text(
+  'F: ${displayNumber(total.fat)} g',
+  style: const TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+  ),
+),
+Text(
+  'C: ${displayNumber(total.carbs)} g',
+  style: const TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+  ),
+),
+  ],
+),
                       const SizedBox(height: 12),
                       const Divider(color: Colors.white70),
                       const SizedBox(height: 8),
@@ -545,49 +608,7 @@ onEditDate: (date) async {
                     ],
                   ),
                 ),
-                const SizedBox(height: 28),
-                const SectionTitle(
-                  title: '營養攝取',
-                  subtitle: 'NUTRITION SUMMARY',
-                ),
-                const SizedBox(height: 16),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final columns =
-                        constraints.maxWidth >= 520 ? 3 : 2;
-                    return GridView.count(
-                      crossAxisCount: columns,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 1.55,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        NutritionCard(
-                          label: '蛋白質',
-                          value: total.protein,
-                          color: BloomColors.purple,
-                          accent: BloomColors.purpleDark,
-                          icon: Icons.fitness_center_rounded,
-                        ),
-                        NutritionCard(
-                          label: '脂肪',
-                          value: total.fat,
-                          color: BloomColors.yellow,
-                          accent: BloomColors.yellowDark,
-                          icon: Icons.water_drop_rounded,
-                        ),
-                        NutritionCard(
-                          label: '碳水化合物',
-                          value: total.carbs,
-                          color: BloomColors.peach,
-                          accent: BloomColors.peachDark,
-                          icon: Icons.grain_rounded,
-                        ),
-                      ],
-                    );
-                  },
-                ),
+
                 const SizedBox(height: 32),
                 const SectionTitle(
                   title: '每日飲食',
@@ -697,7 +718,199 @@ onEditDate: (date) async {
                   );
                 }),
                 const SizedBox(height: 24),
-                const Center(
+
+const SectionTitle(
+  title: '每日小習慣',
+  subtitle: 'DAILY LITTLE HABITS',
+),
+
+const SizedBox(height: 16),
+
+  Container(
+  padding: const EdgeInsets.all(16),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(20),
+    border: Border.all(
+      color: const Color(0xFFF0EAE8),
+    ),
+  ),
+  child: Column(
+  children: [
+    Row(
+      children: [
+      Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFBE4EE),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: const Icon(
+          Icons.local_florist_outlined,
+          color: Color(0xFFD99BB8),
+        ),
+      ),
+      const SizedBox(width: 14),
+      const Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '噗噗紀錄',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: BloomColors.text,
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              'Poop Check',
+              style: TextStyle(
+                fontSize: 11,
+                color: BloomColors.secondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+      IconButton(
+  onPressed: () {
+    setState(() {
+      habits['poop'] = !(habits['poop'] ?? false);
+    });
+    saveHabits();
+  },
+  icon: Icon(
+    habits['poop'] == true
+        ? Icons.check_box
+        : Icons.check_box_outline_blank,
+    color: const Color(0xFFD99BB8),
+  ),
+),
+    ],
+), // Row
+const SizedBox(height: 16),
+const Divider(height: 1),
+const SizedBox(height: 16),
+
+Row(
+  children: [
+    Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF3D5),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: const Icon(
+        Icons.local_drink_outlined,
+        color: Color(0xFFD6B65C),
+      ),
+    ),
+    const SizedBox(width: 14),
+    const Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '不喝含糖飲料',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: BloomColors.text,
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            'No Sugary Drinks',
+            style: TextStyle(
+              fontSize: 11,
+              color: BloomColors.secondary,
+            ),
+          ),
+        ],
+      ),
+    ),
+   IconButton(
+  onPressed: () {
+    setState(() {
+      habits['noSugaryDrinks'] =
+          !(habits['noSugaryDrinks'] ?? false);
+    });
+    saveHabits();
+  },
+  icon: Icon(
+    habits['noSugaryDrinks'] == true
+        ? Icons.check_box
+        : Icons.check_box_outline_blank,
+    color: const Color(0xFFD6B65C),
+  ),
+),
+  ],
+),
+const SizedBox(height: 16),
+const Divider(height: 1),
+const SizedBox(height: 16),
+
+Row(
+  children: [
+    Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEEE5FA),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: const Icon(
+        Icons.fitness_center_outlined,
+        color: Color(0xFFAA91D1),
+      ),
+    ),
+    const SizedBox(width: 14),
+    const Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '動一動',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: BloomColors.text,
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            'Move Your Body',
+            style: TextStyle(
+              fontSize: 11,
+              color: BloomColors.secondary,
+            ),
+          ),
+        ],
+      ),
+    ),
+    IconButton(
+  onPressed: () {
+    setState(() {
+      habits['moveYourBody'] =
+          !(habits['moveYourBody'] ?? false);
+    });
+    saveHabits();
+  },
+  icon: Icon(
+    habits['moveYourBody'] == true
+        ? Icons.check_box
+        : Icons.check_box_outline_blank,
+    color: const Color(0xFFAA91D1),
+  ),
+),
+  ],
+),
+], 
+), // Column
+), // Container
+
+const SizedBox(height: 16),
+
+const SizedBox(height: 16),
+                  const Center(
                   child: Text(
                     'Made with love ♡ Daily Bloom',
                     style: TextStyle(

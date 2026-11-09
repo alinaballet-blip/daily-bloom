@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'services/nutrition_storage.dart';
 import 'pages/calendar_page.dart';
 import 'pages/settings_page.dart';
+import 'bloom_calculator.dart';
+
 
 void main() {
   runApp(const DailyBloomApp());
@@ -892,6 +894,35 @@ class _MealEditorState extends State<MealEditor> {
       decoration: InputDecoration(
         labelText: label,
         suffixText: unit,
+        suffixIcon: IconButton(
+  icon: const Icon(
+    Icons.calculate_outlined,
+    color: Color(0xFFB399C7),
+  ),
+  tooltip: '開啟計算機',
+  onPressed: () async {
+  final result = await showModalBottomSheet<String>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: const Color(0xFFF8F3FA),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(24),
+      ),
+    ),
+   
+builder: (context) {
+  return BloomCalculator(
+    initialValue: controller.text,
+  );
+},
+
+);
+if (result != null) {
+  controller.text = result;
+}
+},
+),
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(
